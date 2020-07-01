@@ -1,0 +1,12 @@
+[submodule "libs/tinyusb"]
+	path = libs/tinyusb
+	url = https://github.com/hathach/tinyusb
+[submodule "libs/ringbuf"]
+	path = libs/ringbuf
+	url = https://github.com/jeremyherbert/ringbuf
+[submodule "libs/simplecborrpc"]
+	path = libs/simplecborrpc
+	url = https://github.com/jeremyherbert/simplecborrpc
+[submodule "libs/simplehdlc"]
+	path = libs/simplehdlc
+	url = https://github.com/jeremyherbert/simplehdlc
