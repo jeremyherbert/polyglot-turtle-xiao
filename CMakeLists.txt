@@ -13,7 +13,7 @@ include(cmake/utils.cmake)
 set(CPU_FLAGS "-flto -mthumb -mabi=aapcs-linux -mcpu=cortex-m0plus -fdata-sections -ffunction-sections -ffreestanding -nostartfiles -lc -lnosys --specs=nano.specs")
 
 set(GCC_FLAGS "-fsingle-precision-constant -fno-strict-aliasing -Wdouble-promotion -Wno-endif-labels
-                -Wall -Wextra -Werror -Werror-implicit-function-declaration -Wfatal-errors -Wfloat-equal -Wundef
+                -Wall -Wextra -Werror-implicit-function-declaration -Wfatal-errors -Wfloat-equal -Wundef
                 -Wshadow -Wwrite-strings -Wsign-compare -Wmissing-format-attribute -Wno-deprecated-declarations
                 -Wnested-externs -Wunreachable-code -Wno-error=lto-type-mismatch -Wno-unused-parameter
                 -Wno-error=float-equal -Wno-error=double-promotion")
@@ -59,6 +59,7 @@ set(SIMPLEHDLC_FILES
 
 set(SIMPLECBORRPC_FILES
         libs/simplecborrpc/simplecborrpc.c
+        libs/simplecborrpc/default_functions.c
         libs/simplecborrpc/tinycbor/src/cborencoder.c
         libs/simplecborrpc/tinycbor/src/cborerrorstrings.c
         libs/simplecborrpc/tinycbor/src/cborparser.c

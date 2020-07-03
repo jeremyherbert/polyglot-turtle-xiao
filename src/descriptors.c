@@ -2,10 +2,6 @@
 
 #include "tusb.h"
 
-#define _PID_MAP(itf, n)  ( (CFG_TUD_##itf) << (n) )
-#define USB_PID           (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
-                           _PID_MAP(MIDI, 3) | _PID_MAP(VENDOR, 4) )
-
 static tusb_desc_device_t const desc_device = {
         .bLength            = sizeof(tusb_desc_device_t),
         .bDescriptorType    = TUSB_DESC_DEVICE,
@@ -18,8 +14,8 @@ static tusb_desc_device_t const desc_device = {
 
         .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
 
-        .idVendor           = 0xf055,
-        .idProduct          = USB_PID,
+        .idVendor           = 0x04D8,
+        .idProduct          = 0xEB74, // sublicensed from microchip
         .bcdDevice          = 0x0100,
 
         .iManufacturer      = 0x01,
@@ -36,49 +32,7 @@ uint8_t const * tud_descriptor_device_cb(void) {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 static uint8_t const desc_hid_report[] = {
-        HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     )        ,\
-  HID_USAGE      ( HID_USAGE_DESKTOP_GAMEPAD  )        ,\
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION )        ,\
-    /* 16 bit Button Map */ \
-    HID_USAGE_PAGE   ( HID_USAGE_PAGE_BUTTON                  ) ,\
-    HID_USAGE_MIN    ( 1                                      ) ,\
-    HID_USAGE_MAX    ( 16                                     ) ,\
-    HID_LOGICAL_MIN  ( 0                                      ) ,\
-    HID_LOGICAL_MAX  ( 1                                      ) ,\
-    HID_PHYSICAL_MIN (0), \
-    HID_PHYSICAL_MAX (1), \
-    HID_REPORT_COUNT ( 16                                     ) ,\
-    HID_REPORT_SIZE  ( 1                                      ) ,\
-    HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE    ) ,\
-    /* X, Y, RX, RY, RZ (min -127, max 127 ) */ \
-    HID_USAGE_PAGE   ( HID_USAGE_PAGE_DESKTOP                 ) ,\
-    HID_LOGICAL_MIN  ( 0x81                                   ) ,\
-    HID_LOGICAL_MAX  ( 0x7f                                   ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_X                    ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_Y                    ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_RX                   ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_RY                   ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_RZ                   ) ,\
-    HID_REPORT_COUNT ( 5                                      ) ,\
-    HID_REPORT_SIZE  ( 8                                     ) ,\
-    HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
-
-        HID_USAGE_PAGE   ( HID_USAGE_PAGE_DESKTOP                 ) ,\
-    HID_LOGICAL_MIN  ( 0x0                                   ) ,\
-    HID_LOGICAL_MAX  ( 0x1                                   ) ,\
-    HID_PHYSICAL_MIN (0), \
-    HID_PHYSICAL_MAX (1), \
-    HID_USAGE        ( HID_USAGE_DESKTOP_DPAD_UP                   ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_DPAD_DOWN                    ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_DPAD_LEFT                   ) ,\
-    HID_USAGE        ( HID_USAGE_DESKTOP_DPAD_RIGHT                   ) ,\
-    HID_REPORT_COUNT ( 4                                      ) ,\
-    HID_REPORT_SIZE  ( 1                                     ) ,\
-    HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
-    HID_REPORT_COUNT (1), \
-    HID_REPORT_SIZE  (4), \
-    HID_INPUT        ( HID_CONSTANT | HID_VARIABLE | HID_ABSOLUTE), \
-  HID_COLLECTION_END \
+    TUD_HID_REPORT_DESC_GENERIC_INOUT(CFG_TUD_HID_BUFSIZE)
 };
 
 uint8_t const * tud_hid_descriptor_report_cb(void) {
