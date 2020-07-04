@@ -27,6 +27,21 @@
 #define UART_TX_PIN PIN_PB08 // SERCOM4_PAD0
 #define UART_RX_PIN PIN_PB09 // SERCOM4_PAD1
 
+#define I2C_SDA_PIN PIN_PA08
+#define I2C_SCL_PIN PIN_PA09
+
+#define SPI_SCK_PIN PIN_PA07
+#define SPI_MOSI_PIN PIN_PA06
+#define SPI_MISO_PIN PIN_PA05
+
+#define GPIO_PIN_COUNT 4
+static const size_t gpio_pin_map[GPIO_PIN_COUNT] = {
+        PIN_PA02,
+        PIN_PA04,
+        PIN_PA10,
+        PIN_PA11
+};
+
 volatile uint32_t busy_led_blink_ms = 500;
 volatile uint32_t tx_led_blink_ms = 0;
 volatile uint32_t rx_led_blink_ms = 0;
@@ -60,17 +75,18 @@ void clock_init() {
 
     SysTick_Config(CONF_CPU_FREQUENCY / 1000);
 
-
     // enable USB clock
     _pm_enable_bus_clock(PM_BUS_APBB, USB);
     _pm_enable_bus_clock(PM_BUS_AHB, USB);
     _gclk_enable_channel(USB_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
-
-
     // enable UART clock
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM4);
     _gclk_enable_channel(SERCOM4_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
+
+    // enable I2C clock
+    _pm_enable_bus_clock(PM_BUS_APBC, SERCOM2);
+    _gclk_enable_channel(SERCOM2_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
     // enable SPI clock
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM0);
@@ -112,6 +128,17 @@ void gpio_init() {
     gpio_set_pin_function(UART_TX_PIN, PINMUX_PB08D_SERCOM4_PAD0);
     gpio_set_pin_function(UART_RX_PIN, PINMUX_PB09D_SERCOM4_PAD1);
     gpio_set_pin_pull_mode(UART_RX_PIN, GPIO_PULL_UP);
+
+    // I2C
+    gpio_set_pin_function(I2C_SDA_PIN, PINMUX_PA08D_SERCOM2_PAD0);
+    gpio_set_pin_function(I2C_SCL_PIN, PINMUX_PA09D_SERCOM2_PAD1);
+    gpio_set_pin_pull_mode(I2C_SDA_PIN, GPIO_PULL_UP);
+    gpio_set_pin_pull_mode(I2C_SCL_PIN, GPIO_PULL_UP);
+
+    // SPI
+    gpio_set_pin_function(SPI_SCK_PIN, PINMUX_PA07D_SERCOM0_PAD3);
+    gpio_set_pin_function(SPI_MOSI_PIN, PINMUX_PA06D_SERCOM0_PAD2);
+    gpio_set_pin_function(SPI_MISO_PIN, PINMUX_PA05D_SERCOM0_PAD1);
 }
 
 /*****************************************************
@@ -135,6 +162,131 @@ rpc_echo(const CborValue *args_iterator, CborEncoder *result, const char **error
     return RPC_OK;
 }
 
+rpc_error_t
+rpc_gpio_set_dir(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    CborValue private_args_it = *args_iterator;
+    uint64_t pin_number;
+    uint64_t direction;
+
+    cbor_value_get_uint64(&private_args_it, &pin_number);
+    cbor_value_advance(&private_args_it);
+    cbor_value_get_uint64(&private_args_it, &direction);
+
+    if (pin_number >= GPIO_PIN_COUNT) {
+        *error_msg = "Invalid pin";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+
+    if (direction > 2) {
+        *error_msg = "Invalid direction";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+
+    switch(direction) {
+        case 0:
+            gpio_set_pin_direction(gpio_pin_map[pin_number], GPIO_DIRECTION_IN);
+            break;
+        case 1:
+            gpio_set_pin_direction(gpio_pin_map[pin_number], GPIO_DIRECTION_OUT);
+            break;
+        case 2:
+            gpio_set_pin_direction(gpio_pin_map[pin_number], GPIO_DIRECTION_OFF);
+            break;
+        default:
+            return RPC_ERROR_INTERNAL_ERROR; // this should never occur
+    }
+
+    cbor_encode_null(result);
+    return RPC_OK;
+}
+
+rpc_error_t
+rpc_gpio_set_pull(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    CborValue private_args_it = *args_iterator;
+    uint64_t pin_number;
+    uint64_t pull_type;
+
+    cbor_value_get_uint64(&private_args_it, &pin_number);
+    cbor_value_advance(&private_args_it);
+    cbor_value_get_uint64(&private_args_it, &pull_type);
+
+    if (pin_number >= GPIO_PIN_COUNT) {
+        *error_msg = "Invalid pin";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+
+    if (pull_type > 2) {
+        *error_msg = "Invalid pull type";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+
+    switch(pull_type) {
+        case 0:
+            gpio_set_pin_pull_mode(gpio_pin_map[pin_number], GPIO_PULL_OFF);
+            break;
+        case 1:
+            gpio_set_pin_pull_mode(gpio_pin_map[pin_number], GPIO_PULL_UP);
+            break;
+        case 2:
+            gpio_set_pin_pull_mode(gpio_pin_map[pin_number], GPIO_PULL_DOWN);
+            break;
+        default:
+            return RPC_ERROR_INTERNAL_ERROR; // this should never occur
+    }
+
+    cbor_encode_null(result);
+    return RPC_OK;
+}
+
+rpc_error_t
+rpc_gpio_set_level(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    CborValue private_args_it = *args_iterator;
+
+    uint64_t pin_number;
+    bool value;
+
+    cbor_value_get_uint64(&private_args_it, &pin_number);
+    cbor_value_advance(&private_args_it);
+    cbor_value_get_boolean(&private_args_it, &value);
+
+    if (pin_number >= GPIO_PIN_COUNT) {
+        *error_msg = "Invalid pin";
+        return RPC_ERROR_INVALID_ARGS;
+    } else {
+        gpio_set_pin_level(gpio_pin_map[pin_number], value);
+    }
+
+    cbor_encode_null(result);
+    return RPC_OK;
+}
+
+rpc_error_t
+rpc_gpio_get_level(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    uint64_t pin_number;
+    cbor_value_get_uint64(args_iterator, &pin_number);
+
+    if (pin_number >= GPIO_PIN_COUNT) {
+        *error_msg = "Invalid pin";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+
+    bool read_value = gpio_get_pin_level(gpio_pin_map[pin_number]);
+    cbor_encode_boolean(result, read_value);
+
+    return RPC_OK;
+}
+
+rpc_error_t
+rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+
+    return RPC_OK;
+}
+
+rpc_error_t
+rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+
+    return RPC_OK;
+}
 
 /*****************************************************
  * HID/HDLC interface
