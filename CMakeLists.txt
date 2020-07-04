@@ -24,6 +24,7 @@ add_definitions(${CPU_FLAGS} ${GCC_FLAGS} -Og -g
 set(LINKER_FILE ${CMAKE_CURRENT_LIST_DIR}/libs/tinyusb/hw/bsp/seeeduino_xiao/samd21g18a_flash.ld)
 string(APPEND CMAKE_EXE_LINKER_FLAGS " ${CPU_FLAGS} -Wl,-T ${LINKER_FILE}")
 string(APPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--gc-sections -Wl,-Map=output.map -fshort-enums")
+string(APPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--undefined=vTaskSwitchContext") # workaround for FreeRTOS/linker issue
 
 set(RTT_FILES
         libs/rtt/SEGGER_RTT.c
@@ -37,6 +38,18 @@ set(TINYUSB_FILES
         libs/tinyusb/src/device/usbd_control.c
         libs/tinyusb/src/portable/microchip/samd/dcd_samd.c
         libs/tinyusb/src/tusb.c)
+
+set(FREERTOS_ROOT libs/tinyusb/lib/FreeRTOS/FreeRTOS/Source)
+set(FREERTOS_FILES
+        ${FREERTOS_ROOT}/portable/GCC/ARM_CM0/port.c
+        ${FREERTOS_ROOT}/croutine.c
+        ${FREERTOS_ROOT}/event_groups.c
+        ${FREERTOS_ROOT}/list.c
+        ${FREERTOS_ROOT}/queue.c
+        ${FREERTOS_ROOT}/stream_buffer.c
+        ${FREERTOS_ROOT}/tasks.c
+        ${FREERTOS_ROOT}/timers.c
+        )
 
 set(HAL_SRC_DIR libs/tinyusb/hw/mcu/microchip/samd/asf4/samd21)
 set(HAL_FILES
@@ -72,7 +85,13 @@ set(SRC_FILES
         src/rpc/rpc_api.c
 
         src/main.c
-        src/descriptors.c)
+        src/descriptors.c
+        src/rpc_gpio.c
+        src/rpc_i2c.c
+        src/rpc_spi.c
+        src/hid_rpc.c
+
+        src/freertos_hook.c src/cdc_usart.c src/cdc_usart.h)
 
 include_directories(
         src
@@ -88,6 +107,9 @@ include_directories(
         libs/simplecborrpc
         libs/simplecborrpc/tinycbor/src
 
+        ${FREERTOS_ROOT}/include
+        ${FREERTOS_ROOT}/portable/GCC/ARM_CM0
+
         ${HAL_SRC_DIR}/
         ${HAL_SRC_DIR}/config
         ${HAL_SRC_DIR}/include
@@ -99,7 +121,7 @@ include_directories(
         ${HAL_SRC_DIR}/CMSIS/Include
 )
 
-add_executable(polyglot_turtle_xiao ${SRC_FILES} ${SIMPLEHDLC_FILES} ${SIMPLECBORRPC_FILES} ${RTT_FILES} ${TINYUSB_FILES} ${HAL_FILES})
+add_executable(polyglot_turtle_xiao ${SRC_FILES} ${SIMPLEHDLC_FILES} ${SIMPLECBORRPC_FILES} ${RTT_FILES} ${TINYUSB_FILES} ${FREERTOS_FILES} ${HAL_FILES})
 
 firmware_size(polyglot_turtle_xiao)
 generate_object(polyglot_turtle_xiao .bin binary)

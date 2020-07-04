@@ -1,0 +1,6 @@
+#ifndef POLYGLOT_TURTLE_XIAO_PROJ_HID_RPC_H
+#define POLYGLOT_TURTLE_XIAO_PROJ_HID_RPC_H
+
+void start_hid_rpc_task();
+
+#endif //POLYGLOT_TURTLE_XIAO_PROJ_HID_RPC_H
