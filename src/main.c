@@ -55,22 +55,26 @@ void clock_init() {
 
     NVIC_SetPriority(USB_IRQn, 1);
 
-    // enable USB clock
+    // adjust GCLK1 to be 8MHz (divide by 6) and fed by DFLL for I2C/SPI
+    hri_gclk_write_GENDIV_reg(GCLK, GCLK_GENDIV_DIV(6) | GCLK_GENDIV_ID(1));
+    hri_gclk_write_GENCTRL_reg(GCLK, GCLK_GENCTRL_GENEN | GCLK_GENCTRL_OE | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(1));
+
+    // enable USB clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBB, USB);
     _pm_enable_bus_clock(PM_BUS_AHB, USB);
     _gclk_enable_channel(USB_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
-    // enable UART clock
+    // enable UART clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM4);
     _gclk_enable_channel(SERCOM4_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
-    // enable I2C clock
+    // enable I2C clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM2);
     _gclk_enable_channel(SERCOM2_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
-    // enable SPI clock
+    // enable SPI clock (GCLK1)
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM0);
-    _gclk_enable_channel(SERCOM0_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
+    _gclk_enable_channel(SERCOM0_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK1_Val);
 
     // enable DMA clock
     _pm_enable_bus_clock(PM_BUS_APBB, DMAC);
@@ -110,10 +114,10 @@ void gpio_init() {
     gpio_set_pin_pull_mode(UART_RX_PIN, GPIO_PULL_UP);
 
     // I2C
-    gpio_set_pin_function(I2C_SDA_PIN, PINMUX_PA08D_SERCOM2_PAD0);
-    gpio_set_pin_function(I2C_SCL_PIN, PINMUX_PA09D_SERCOM2_PAD1);
     gpio_set_pin_pull_mode(I2C_SDA_PIN, GPIO_PULL_UP);
     gpio_set_pin_pull_mode(I2C_SCL_PIN, GPIO_PULL_UP);
+    gpio_set_pin_function(I2C_SDA_PIN, PINMUX_PA08D_SERCOM2_PAD0);
+    gpio_set_pin_function(I2C_SCL_PIN, PINMUX_PA09D_SERCOM2_PAD1);
 
     // SPI
     gpio_set_pin_function(SPI_SCK_PIN, PINMUX_PA07D_SERCOM0_PAD3);

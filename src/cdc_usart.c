@@ -4,7 +4,6 @@
 
 #include "FreeRTOS.h"
 #include "event_groups.h"
-#include "semphr.h"
 #include "limits.h"
 
 #include "SEGGER_RTT.h"
@@ -12,6 +11,8 @@
 #include "tusb.h"
 
 #include "cdc_usart.h"
+
+#include "pins.h"
 
 #define EVENT_USART_RX                  (1 << 0)
 #define EVENT_CDC_RX                    (1 << 1)

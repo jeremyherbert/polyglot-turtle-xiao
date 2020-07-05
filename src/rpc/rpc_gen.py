@@ -28,14 +28,14 @@ generate_api(current_path, {
     ],
 
     "i2c_exchange": [
-        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # pin number
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # device address (right aligned)
         CborTypes.CBOR_TYPE_BYTE_STRING,       # bytes to send (can be empty)
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # number of bytes to receive
-        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # clock rate (Hz)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # clock rate (Hz)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # transaction timeout (ms)
     ],
 
     "spi_exchange": [
-        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # pin number
         CborTypes.CBOR_TYPE_BYTE_STRING,       # bytes to send (can be empty)
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # number of bytes to receive
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # clock rate (Hz)
