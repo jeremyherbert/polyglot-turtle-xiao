@@ -56,10 +56,6 @@ void clock_init() {
 
     NVIC_SetPriority(USB_IRQn, 1);
 
-    // adjust GCLK1 to be 8MHz (divide by 6) and fed by DFLL for I2C/SPI
-    hri_gclk_write_GENDIV_reg(GCLK, GCLK_GENDIV_DIV(6) | GCLK_GENDIV_ID(1));
-    hri_gclk_write_GENCTRL_reg(GCLK, GCLK_GENCTRL_GENEN | GCLK_GENCTRL_OE | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(1));
-
     // enable USB clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBB, USB);
     _pm_enable_bus_clock(PM_BUS_AHB, USB);
@@ -73,9 +69,9 @@ void clock_init() {
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM2);
     _gclk_enable_channel(SERCOM2_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
-    // enable SPI clock (GCLK1)
+    // enable SPI clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM0);
-    _gclk_enable_channel(SERCOM0_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK1_Val);
+    _gclk_enable_channel(SERCOM0_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
     // enable DMA clock
     _pm_enable_bus_clock(PM_BUS_APBB, DMAC);

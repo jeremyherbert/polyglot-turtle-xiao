@@ -61,7 +61,7 @@ static uint8_t const desc_configuration[] = {
         TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, 0x81, 8, 0x02, 0x82, 64),
 
         // Interface number, string index, protocol, report descriptor len, EP In & Out address, size & polling interval
-        TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, 0x80 | EPNUM_HID, CFG_TUD_HID_BUFSIZE, 2)
+        TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_HID, 0, HID_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, 0x80 | EPNUM_HID, CFG_TUD_HID_BUFSIZE, 1)
 };
 
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index) {

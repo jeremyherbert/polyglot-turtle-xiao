@@ -37,7 +37,10 @@ generate_api(current_path, {
 
     "spi_exchange": [
         CborTypes.CBOR_TYPE_BYTE_STRING,       # bytes to send (can be empty)
-        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # number of bytes to receive
-        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # clock rate (Hz)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # read size
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # clock rate (Hz)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # SPI mode
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # transaction timeout (ms)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # output pin number to use as CS (set to 0xFF to disable)
     ]
 })

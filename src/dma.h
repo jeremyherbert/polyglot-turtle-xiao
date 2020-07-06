@@ -1,7 +1,3 @@
-//
-// Created by jeremy on 7/5/20.
-//
-
 #ifndef POLYGLOT_TURTLE_XIAO_PROJ_DMA_H
 #define POLYGLOT_TURTLE_XIAO_PROJ_DMA_H
 

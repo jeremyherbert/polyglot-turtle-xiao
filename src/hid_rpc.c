@@ -1,7 +1,7 @@
 #include "ringbuf.h"
 #include "simplehdlc.h"
 #include "simplecborrpc.h"
-
+#include "utils.h"
 #include "rpc_api.h"
 
 #include "SEGGER_RTT.h"
@@ -9,6 +9,7 @@
 
 #include "hid_rpc.h"
 #include "rpc_i2c.h"
+#include "rpc_spi.h"
 
 #define EVENT_HID_RX                  (1 << 0)
 
@@ -17,10 +18,11 @@ StackType_t hid_rpc_task_stack[HID_RPC_STACK_SIZE];
 StaticTask_t hid_rpc_task_taskdef;
 TaskHandle_t hid_rpc_task_handle;
 
+COMPILER_ALIGNED(16)
 uint8_t i2c_spi_transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
 
-uint8_t hdlc_rx_buffer[4096];
-uint8_t rpc_output_buffer[4096];
+uint8_t hdlc_rx_buffer[5*I2C_SPI_TRANSACTION_BUFFER_SIZE/2];
+uint8_t rpc_output_buffer[5*I2C_SPI_TRANSACTION_BUFFER_SIZE/2];
 
 uint8_t hid_rx_buffer[256];
 uint8_t hid_tx_buffer[70];
@@ -41,6 +43,7 @@ simplehdlc_callbacks_t hdlc_callbacks = {
 
 void hid_rpc_init() {
     rpc_i2c_init();
+    rpc_spi_init();
 
     simplehdlc_init(&hdlc_context, hdlc_rx_buffer, sizeof(hdlc_rx_buffer), &hdlc_callbacks, NULL);
     ringbuf_init(&hid_rx_ringbuffer, hid_rx_buffer, sizeof(hid_rx_buffer));
