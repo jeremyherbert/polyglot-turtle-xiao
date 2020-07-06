@@ -9,6 +9,7 @@
 #include "SEGGER_RTT.h"
 
 #include "tusb.h"
+#include "leds.h"
 
 #include "cdc_usart.h"
 #include "config.h"
@@ -207,6 +208,7 @@ void cdc_usart_task(void *param) {
                 const size_t microbuf_index = usart_microbuf_index[microbuf_selected];
 
                 if (microbuf_index > 0) {
+                    set_led_counter(LED_RX_IDX, 2);
                     tud_cdc_write(microbuf, microbuf_index);
                     tud_cdc_write_flush();
 
@@ -220,6 +222,7 @@ void cdc_usart_task(void *param) {
 
             if (event & EVENT_DMA_COMPLETE) {
                 dma_running = false;
+                set_led_counter(LED_TX_IDX, 2);
             }
 
             if (line_coding_needs_change && !dma_running) {
@@ -245,6 +248,7 @@ void cdc_usart_task(void *param) {
                     // enable DMA channel
                     dma_start_channel(DMA_CHANNEL_USART);
                     dma_running = true;
+                    set_led_counter(LED_TX_IDX, 50000);
                 }
 
                 cdc_data_waiting = tud_cdc_available() != 0;

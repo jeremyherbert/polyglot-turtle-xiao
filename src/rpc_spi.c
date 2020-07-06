@@ -187,7 +187,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     dma_start_channel(DMA_CHANNEL_SPI_READ);
     dma_start_channel(DMA_CHANNEL_SPI_WRITE);
 
-    EventBits_t events = xEventGroupWaitBits(spi_events, EVENT_SPI_WRITE_DONE | EVENT_SPI_READ_DONE, pdTRUE, pdTRUE, transaction_timeout_ms);
+    EventBits_t events = xEventGroupWaitBits(spi_events, EVENT_SPI_WRITE_DONE | EVENT_SPI_READ_DONE, pdTRUE, pdTRUE, transaction_timeout_ms/portTICK_PERIOD_MS);
 
     if (cs_pin_number != 0xFF) {
         gpio_set_pin_level(gpio_pin_map[cs_pin_number], true);

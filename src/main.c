@@ -27,6 +27,7 @@
 #include "cdc_usart.h"
 #include "hid_rpc.h"
 #include "dma.h"
+#include "leds.h"
 
 #include "pins.h"
 
@@ -178,6 +179,8 @@ int main() {
             configMAX_PRIORITIES-1,
             usb_device_stack,
             &usb_device_taskdef);
+
+    led_blink_init();
 
     dma_init();
 

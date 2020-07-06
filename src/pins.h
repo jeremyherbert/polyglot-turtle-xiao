@@ -2,6 +2,8 @@
 #define POLYGLOT_TURTLE_XIAO_PROJ_PINS_H
 
 #include "sam.h"
+#include <stddef.h>
+
 
 #define LED_BUSY_PIN PIN_PA17
 #define LED_TX_PIN PIN_PA19
@@ -18,6 +20,7 @@
 #define SPI_MISO_PIN PIN_PA05
 
 #define GPIO_PIN_COUNT 4
+
 static const size_t gpio_pin_map[GPIO_PIN_COUNT] = {
         PIN_PA02,
         PIN_PA04,

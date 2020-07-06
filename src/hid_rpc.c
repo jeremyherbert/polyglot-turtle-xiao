@@ -7,6 +7,7 @@
 #include "SEGGER_RTT.h"
 #include "tusb.h"
 
+#include "leds.h"
 #include "hid_rpc.h"
 #include "rpc_i2c.h"
 #include "rpc_spi.h"
@@ -53,6 +54,7 @@ void hid_rpc_init() {
 static uint8_t flush_tmp[64];
 void hid_flush() {
     if (ringbuf_len(&hid_tx_ringbuffer)) {
+        set_led_counter(LED_BUSY_IDX, 2);
 
         size_t count = ringbuf_pop(&hid_tx_ringbuffer, flush_tmp, 64);
 
@@ -108,6 +110,7 @@ void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uin
 //                      bufsize);
 
     ringbuf_push(&hid_rx_ringbuffer, buffer, bufsize);
+    set_led_counter(LED_BUSY_IDX, 2);
     xTaskNotify(hid_rpc_task_handle, EVENT_HID_RX, eSetBits);
 }
 

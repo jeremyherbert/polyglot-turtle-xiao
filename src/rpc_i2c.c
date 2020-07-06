@@ -204,7 +204,7 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
         hri_sercomi2cm_write_ADDR_reg(SERCOM2, SERCOM_I2CM_ADDR_ADDR((device_address << 1) | 1));
     }
 
-    EventBits_t event_result = xEventGroupWaitBits(i2c_events, EVENT_I2C_TRANSACTION_DONE | EVENT_I2C_ERROR, pdTRUE, pdTRUE, transaction_timeout_ms);
+    EventBits_t event_result = xEventGroupWaitBits(i2c_events, EVENT_I2C_TRANSACTION_DONE | EVENT_I2C_ERROR, pdTRUE, pdTRUE, transaction_timeout_ms/portTICK_PERIOD_MS);
 
     if (event_result & EVENT_I2C_TRANSACTION_DONE) {
         error_occurred = false;
