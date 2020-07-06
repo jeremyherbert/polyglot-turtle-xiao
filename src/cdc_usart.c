@@ -11,8 +11,10 @@
 #include "tusb.h"
 
 #include "cdc_usart.h"
+#include "config.h"
 
 #include "pins.h"
+#include "dma.h"
 
 #define EVENT_USART_RX                  (1 << 0)
 #define EVENT_CDC_RX                    (1 << 1)
@@ -39,15 +41,11 @@ volatile cdc_line_coding_t cdc_line_coding = {
 COMPILER_ALIGNED(16)
 static uint8_t dma_buffer[64];
 
-COMPILER_ALIGNED(16)
-static DmacDescriptor _descriptor_section[DMAC_CH_NUM] SECTION_DMAC_DESCRIPTOR;
-
-COMPILER_ALIGNED(16)
-static DmacDescriptor _descriptor_writeback_section[DMAC_CH_NUM] SECTION_DMAC_DESCRIPTOR;
-
-
 void usart_update_configuration_from_line_coding();
 
+void usart_dma_callback();
+
+static DmacDescriptor *dma_descriptor;
 
 void cdc_usart_init() {
     // USART is via SERCOM4
@@ -65,39 +63,15 @@ void cdc_usart_init() {
     hri_sercomusart_set_CTRLA_ENABLE_bit(SERCOM4);
     hri_sercomusart_wait_for_sync(SERCOM4, SERCOM_USART_SYNCBUSY_SWRST);
 
-    // clear all DMA descriptors
-    memset(_descriptor_section, 0, sizeof(_descriptor_section));
-    memset(_descriptor_writeback_section, 0, sizeof(_descriptor_writeback_section));
-
-    // reset DMA
-    hri_dmac_clear_CTRL_DMAENABLE_bit(DMAC);
-    hri_dmac_clear_CTRL_CRCENABLE_bit(DMAC);
-    hri_dmac_set_CHCTRLA_SWRST_bit(DMAC);
-
-    // enable only priority 0 as we are only doing a single request
-    hri_dmac_write_CTRL_LVLEN0_bit(DMAC, true);
-
-    // set up DMA descriptor addresses
-    hri_dmac_write_BASEADDR_reg(DMAC, (uint32_t)_descriptor_section);
-    hri_dmac_write_WRBADDR_reg(DMAC, (uint32_t)_descriptor_writeback_section);
+    dma_set_callback(DMA_CHANNEL_USART, usart_dma_callback);
+    dma_descriptor = dma_get_descriptor_for_channel(DMA_CHANNEL_USART);
+    dma_configure_channel(DMA_CHANNEL_USART, DMAC_CHCTRLB_TRIGACT_BEAT_Val, SERCOM4_DMAC_ID_TX);
 
     // set DMA target as the USART data register
-    hri_dmacdescriptor_write_DSTADDR_reg(&_descriptor_section[0], (uint32_t) &(SERCOM4->USART.DATA));
-
-    // trigger a beat if USART TX is complete
-    hri_dmac_write_CHID_reg(DMAC, 0);
-    hri_dmac_write_CHCTRLB_TRIGACT_bf(DMAC, DMAC_CHCTRLB_TRIGACT_BEAT_Val);
-    hri_dmac_write_CHCTRLB_TRIGSRC_bf(DMAC, SERCOM4_DMAC_ID_TX);
-    hri_dmac_write_CHINTEN_TCMPL_bit(DMAC, true); // enable DMA complete interrupt
-
-    hri_dmacdescriptor_set_BTCTRL_SRCINC_bit(&_descriptor_section[0]); // increment source address
-    hri_dmacdescriptor_set_BTCTRL_STEPSEL_bit(&_descriptor_section[0]); // stepsize applies to SRC
-    hri_dmacdescriptor_set_BTCTRL_VALID_bit(&_descriptor_section[0]); // mark descriptor as valid
-
-    NVIC_EnableIRQ(DMAC_IRQn);
-
-    // start DMA
-    hri_dmac_set_CTRL_DMAENABLE_bit(DMAC);
+    hri_dmacdescriptor_write_DSTADDR_reg(dma_descriptor, (uint32_t) &(SERCOM4->USART.DATA));
+    hri_dmacdescriptor_set_BTCTRL_SRCINC_bit(dma_descriptor); // increment source address
+    hri_dmacdescriptor_set_BTCTRL_STEPSEL_bit(dma_descriptor); // stepsize applies to SRC
+    hri_dmacdescriptor_set_BTCTRL_VALID_bit(dma_descriptor); // mark descriptor as valid
 }
 
 // USART interrupt
@@ -117,13 +91,6 @@ void SERCOM4_Handler() {
         }
         xTaskNotifyFromISR(cdc_usart_task_handle, EVENT_USART_RX, eSetBits, NULL);
     }
-}
-
-// DMA handler
-void DMAC_Handler() {
-    // the only reason that this will trigger is a channel 0 complete, so just set the event and clear the status bit
-    hri_dmac_clear_CHINTFLAG_TCMPL_bit(DMAC);
-    xTaskNotifyFromISR(cdc_usart_task_handle, EVENT_DMA_COMPLETE, eSetBits, NULL);
 }
 
 void usart_update_configuration_from_line_coding() {
@@ -209,11 +176,16 @@ void tud_cdc_rx_cb(uint8_t itf) {
     xTaskNotify(cdc_usart_task_handle, EVENT_CDC_RX, eSetBits);
 }
 
+void usart_dma_callback() {
+    xTaskNotify(cdc_usart_task_handle, EVENT_DMA_COMPLETE, eSetBits);
+}
+
 void cdc_usart_task(void *param) {
     cdc_usart_init();
 
     bool line_coding_needs_change = false;
     bool cdc_data_waiting = false;
+    bool dma_running = false;
 
     while (1) {
         uint32_t event;
@@ -225,25 +197,10 @@ void cdc_usart_task(void *param) {
                 line_coding_needs_change = true;
             }
 
-            if (line_coding_needs_change & tud_cdc_connected()) {
-                if (!hri_dmac_get_CHCTRLA_ENABLE_bit(DMAC)) { // if DMA is finished
-
-                    hri_sercomusart_clear_CTRLA_ENABLE_bit(SERCOM4); // disable SERCOM4
-                    hri_sercomusart_wait_for_sync(SERCOM4, SERCOM_USART_SYNCBUSY_ENABLE);
-
-                    hri_dmac_write_CHID_reg(DMAC, 0);
-                    usart_update_configuration_from_line_coding();
-                    line_coding_needs_change = false;
-
-                    hri_sercomusart_set_CTRLA_ENABLE_bit(SERCOM4);
-                    hri_sercomusart_wait_for_sync(SERCOM4, SERCOM_USART_SYNCBUSY_ENABLE);
-                }
-            }
-
             if (event & EVENT_USART_RX) {
-                CRITICAL_SECTION_ENTER();
+                portENTER_CRITICAL();
                 usart_microbuf_selected ^= 1; // flip buffers
-                CRITICAL_SECTION_LEAVE();
+                portEXIT_CRITICAL();
 
                 const size_t microbuf_selected = usart_microbuf_selected ^ 1;
                 uint8_t *microbuf = &usart_microbuf[microbuf_selected][0];
@@ -261,26 +218,36 @@ void cdc_usart_task(void *param) {
                 cdc_data_waiting = true;
             }
 
-            if (cdc_data_waiting) {
-                if (tud_cdc_available()) {
-                    hri_dmac_write_CHID_reg(DMAC, 0);
-                    if (!hri_dmac_get_CHCTRLA_ENABLE_bit(DMAC)) { // is DMA transaction complete?
-                        uint32_t tx_len = tud_cdc_read(dma_buffer, 64);
+            if (event & EVENT_DMA_COMPLETE) {
+                dma_running = false;
+            }
 
-                        if (tx_len) {
-                            // set pointer to the final beat of the transaction
-                            hri_dmacdescriptor_write_SRCADDR_reg(&_descriptor_section[0], (uint32_t) (dma_buffer + tx_len));
+            if (line_coding_needs_change && !dma_running) {
+                hri_sercomusart_clear_CTRLA_ENABLE_bit(SERCOM4); // disable SERCOM4
+                hri_sercomusart_wait_for_sync(SERCOM4, SERCOM_USART_SYNCBUSY_ENABLE);
 
-                            // set beat count
-                            hri_dmacdescriptor_write_BTCNT_reg(&_descriptor_section[0], (uint16_t) tx_len);
+                usart_update_configuration_from_line_coding();
+                line_coding_needs_change = false;
 
-                            // enable DMA channel
-                            hri_dmac_set_CHCTRLA_ENABLE_bit(DMAC);
-                        }
+                hri_sercomusart_set_CTRLA_ENABLE_bit(SERCOM4);
+                hri_sercomusart_wait_for_sync(SERCOM4, SERCOM_USART_SYNCBUSY_ENABLE);
+            }
 
-                        cdc_data_waiting = tud_cdc_available() != 0;
-                    }
+            if (cdc_data_waiting && !dma_running) {
+                uint32_t tx_len = tud_cdc_read(dma_buffer, 64);
+                if (tx_len) {
+                    // set pointer to the final beat of the transaction
+                    hri_dmacdescriptor_write_SRCADDR_reg(dma_descriptor, (uint32_t) (dma_buffer + tx_len));
+
+                    // set beat count
+                    hri_dmacdescriptor_write_BTCNT_reg(dma_descriptor, (uint16_t) tx_len);
+
+                    // enable DMA channel
+                    dma_start_channel(DMA_CHANNEL_USART);
+                    dma_running = true;
                 }
+
+                cdc_data_waiting = tud_cdc_available() != 0;
             }
         }
     }

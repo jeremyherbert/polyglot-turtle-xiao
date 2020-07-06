@@ -86,6 +86,7 @@ set(SRC_FILES
 
         src/main.c
         src/descriptors.c
+        src/dma.c
         src/rpc_gpio.c
         src/rpc_i2c.c
         src/rpc_spi.c

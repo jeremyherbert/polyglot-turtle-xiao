@@ -26,6 +26,7 @@
 
 #include "cdc_usart.h"
 #include "hid_rpc.h"
+#include "dma.h"
 
 #include "pins.h"
 
@@ -173,6 +174,7 @@ int main() {
 
     gpio_init();
     tusb_init();
+
     (void) xTaskCreateStatic( usb_device_task,
             "usbd",
             USBD_STACK_SIZE,
@@ -180,6 +182,8 @@ int main() {
             configMAX_PRIORITIES-1,
             usb_device_stack,
             &usb_device_taskdef);
+
+    dma_init();
 
     start_cdc_usart_task();
     start_hid_rpc_task();
