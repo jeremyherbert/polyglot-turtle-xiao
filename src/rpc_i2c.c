@@ -216,7 +216,7 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
 
     if (error_occurred) {
         hri_sercomi2cm_write_CTRLB_CMD_bf(SERCOM2, 3); // generate a stop condition
-        i2c_reinit_with_baudrate(clock_rate); // unlock the bus
+        i2c_hard_unlock_bus(); // unlock the bus
 
         *error_msg = "I2C transaction failed";
         return RPC_ERROR_I2C_FAILED;
