@@ -161,14 +161,20 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
             *error_msg = "Invalid CS pin";
             return RPC_ERROR_INVALID_ARGS;
         }
-
-        gpio_set_pin_direction(gpio_pin_map[cs_pin_number], GPIO_DIRECTION_OUT);
-        gpio_set_pin_level(gpio_pin_map[cs_pin_number], false);
     }
 
+    if (tx_len == 0 && rx_len == 0) {
+        cbor_encode_byte_string(result, i2c_spi_transaction_buffer, 0);
+        return RPC_OK;
+    }
 
     if (rx_len > tx_len) {
         tx_len = rx_len;
+    }
+
+    if (cs_pin_number != 0xFF) {
+        gpio_set_pin_direction(gpio_pin_map[cs_pin_number], GPIO_DIRECTION_OUT);
+        gpio_set_pin_level(gpio_pin_map[cs_pin_number], false);
     }
 
     spi_reinit_with_clock_rate(clock_rate, spi_mode);
