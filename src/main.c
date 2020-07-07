@@ -112,6 +112,8 @@ void gpio_init() {
     gpio_set_pin_pull_mode(UART_RX_PIN, GPIO_PULL_UP);
 
     // I2C
+    gpio_set_pin_direction(I2C_SDA_PIN, GPIO_DIRECTION_IN);
+    gpio_set_pin_direction(I2C_SCL_PIN, GPIO_DIRECTION_IN);
     gpio_set_pin_pull_mode(I2C_SDA_PIN, GPIO_PULL_UP);
     gpio_set_pin_pull_mode(I2C_SCL_PIN, GPIO_PULL_UP);
     gpio_set_pin_function(I2C_SDA_PIN, PINMUX_PA08D_SERCOM2_PAD0);

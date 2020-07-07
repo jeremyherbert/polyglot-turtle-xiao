@@ -40,6 +40,7 @@ static volatile size_t read_len;
 void SERCOM2_Handler() {
     if (hri_sercomi2cm_get_INTFLAG_MB_bit(SERCOM2) || hri_sercomi2cm_get_INTFLAG_SB_bit(SERCOM2)) {
         if (hri_sercomi2cm_get_STATUS_RXNACK_bit(SERCOM2)) {
+            hri_sercomi2cm_clear_STATUS_RXNACK_bit(SERCOM2);
             hri_sercomi2cm_clear_INTFLAG_reg(SERCOM2, SERCOM_I2CM_INTFLAG_SB | SERCOM_I2CM_INTFLAG_MB);
             hri_sercomi2cm_set_CTRLB_ACKACT_bit(SERCOM2); // send NACK
             hri_sercomi2cm_write_CTRLB_CMD_bf(SERCOM2, 3); // nack and stop
@@ -191,6 +192,7 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     bool error_occurred = true;
 
     hri_sercomi2cm_clear_CTRLB_ACKACT_bit(SERCOM2); // send ACKs
+    xEventGroupClearBits(i2c_events, EVENT_I2C_TRANSACTION_DONE | EVENT_I2C_ERROR);
 
     // write phase
     if (write_len) {
@@ -204,7 +206,7 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
         hri_sercomi2cm_write_ADDR_reg(SERCOM2, SERCOM_I2CM_ADDR_ADDR((device_address << 1) | 1));
     }
 
-    EventBits_t event_result = xEventGroupWaitBits(i2c_events, EVENT_I2C_TRANSACTION_DONE | EVENT_I2C_ERROR, pdTRUE, pdTRUE, transaction_timeout_ms/portTICK_PERIOD_MS);
+    EventBits_t event_result = xEventGroupWaitBits(i2c_events, EVENT_I2C_TRANSACTION_DONE | EVENT_I2C_ERROR, pdTRUE, pdFALSE, transaction_timeout_ms/portTICK_PERIOD_MS);
 
     if (event_result & EVENT_I2C_TRANSACTION_DONE) {
         error_occurred = false;

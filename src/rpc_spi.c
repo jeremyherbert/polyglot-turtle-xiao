@@ -172,6 +172,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     }
 
     spi_reinit_with_clock_rate(clock_rate, spi_mode);
+    xEventGroupClearBits(spi_events, EVENT_SPI_READ_DONE | EVENT_SPI_WRITE_DONE);
 
     // setup DMA read
     // set pointer to the final beat of the transaction
