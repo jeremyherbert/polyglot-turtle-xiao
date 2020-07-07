@@ -52,16 +52,14 @@ void SERCOM2_Handler() {
             if (write_phase) {
                 if (write_len == write_index) {
                     if (write_should_stop) {
-                        hri_sercomi2cm_set_CTRLB_ACKACT_bit(SERCOM2); // send NACK
-                        hri_sercomi2cm_write_CTRLB_CMD_bf(SERCOM2, 3); // nack and stop
+                        hri_sercomi2cm_write_CTRLB_CMD_bf(SERCOM2, 3); // stop
                         xEventGroupSetBitsFromISR(i2c_events, EVENT_I2C_TRANSACTION_DONE, NULL);
                     } else {
                         hri_sercomi2cm_write_ADDR_reg(SERCOM2, hri_sercomi2cm_read_ADDR_reg(SERCOM2) | 1); // switch to read
                         write_phase = false;
                     }
                 } else {
-                    hri_sercomi2cm_write_DATA_reg(SERCOM2, i2c_spi_transaction_buffer[write_index++]);
-                    hri_sercomi2cm_write_CTRLB_CMD_bf(SERCOM2, 2); // ack and continue
+                    hri_sercomi2cm_write_DATA_reg(SERCOM2, i2c_spi_transaction_buffer[write_index++]); // continue
                 }
             } else {
                 i2c_spi_transaction_buffer[read_index++] = hri_sercomi2cm_read_DATA_reg(SERCOM2);
