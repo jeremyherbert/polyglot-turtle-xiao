@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 
+#define POLYGLOT_VERSION "0.1.0"
+#define POLYGLOT_HW "seeeduino-xiao"
+
+
 #include "sam.h"
 #include "compiler.h"
 #include "utils.h"
@@ -130,18 +134,17 @@ void gpio_init() {
  ****************************************************/
 
 rpc_error_t
-rpc_echo(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
-    size_t string_length = 0;
-    cbor_value_get_string_length(args_iterator, &string_length);
-    if (string_length > 64) {
-        *error_msg = "String too long";
-        return RPC_ERROR_INVALID_ARGS;
-    }
+rpc_polyglot_version(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    const char *version = POLYGLOT_VERSION;
+    cbor_encode_text_string(result, version, strlen(version));
 
-    char echobuf[64];
-    size_t echobuflen = sizeof(echobuf);
-    cbor_value_copy_text_string(args_iterator, echobuf, &echobuflen, NULL);
-    cbor_encode_text_string(result, echobuf, echobuflen);
+    return RPC_OK;
+}
+
+rpc_error_t
+rpc_polyglot_hw(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    const char *hw = POLYGLOT_HW;
+    cbor_encode_text_string(result, hw, strlen(hw));
 
     return RPC_OK;
 }

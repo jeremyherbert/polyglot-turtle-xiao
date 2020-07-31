@@ -102,6 +102,7 @@ rpc_error_t
 rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
     CborValue private_args_it = *args_iterator;
     size_t tx_len;
+    uint64_t spi_index;
     uint64_t rx_len;
     uint64_t spi_mode;
     uint64_t clock_rate;
@@ -110,6 +111,13 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
 
     // clear the buffer
     memset(i2c_spi_transaction_buffer, 0, I2C_SPI_TRANSACTION_BUFFER_SIZE);
+
+    cbor_value_get_uint64(&private_args_it, &spi_index);
+    if (spi_index != 0) {
+        *error_msg = "Invalid SPI index";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+    cbor_value_advance(&private_args_it);
 
     size_t length;
     cbor_value_calculate_string_length(&private_args_it, &length);

@@ -128,10 +128,18 @@ void i2c_hard_unlock_bus() {
 rpc_error_t
 rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
     CborValue private_args_it = *args_iterator;
+    uint64_t i2c_index;
     uint64_t device_address;
     uint64_t rx_byte_count;
     uint64_t clock_rate;
     uint64_t transaction_timeout_ms;
+
+    cbor_value_get_uint64(&private_args_it, &i2c_index);
+    if (i2c_index != 0) {
+        *error_msg = "Invalid I2C index";
+        return RPC_ERROR_INVALID_ARGS;
+    }
+    cbor_value_advance(&private_args_it);
 
     cbor_value_get_uint64(&private_args_it, &device_address);
     if (device_address > 127) {

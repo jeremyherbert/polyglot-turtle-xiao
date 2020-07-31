@@ -26,7 +26,7 @@ uint8_t hdlc_rx_buffer[5*I2C_SPI_TRANSACTION_BUFFER_SIZE/2];
 uint8_t rpc_output_buffer[5*I2C_SPI_TRANSACTION_BUFFER_SIZE/2];
 
 uint8_t hid_rx_buffer[256];
-uint8_t hid_tx_buffer[70];
+uint8_t hid_tx_buffer[128];
 
 simplehdlc_context_t hdlc_context;
 ringbuf_t hid_rx_ringbuffer;
@@ -62,10 +62,21 @@ void hid_flush() {
         for (size_t i=count; i<64; i++) {
             flush_tmp[i] = SIMPLEHDLC_BOUNDARY_MARKER;
         }
+//
+//        SEGGER_RTT_printf(0, "[RPC] HID flush: ");
+//        for (int i=0; i<64; i++) {
+//            SEGGER_RTT_printf(0, "%02X ", flush_tmp[i]);
+//        }
+//        SEGGER_RTT_printf(0, "\n");
 
-        while (tud_hid_report(0, flush_tmp, 64) != true) {
-            vTaskDelay(1);
+        for (int i=0; i<100; i++) {
+            if (tud_hid_report(0, flush_tmp, 64) == true) {
+                return;
+            } else {
+                vTaskDelay(1);
+            }
         }
+//        SEGGER_RTT_printf(0, "[RPC] Failed to deliver HID report\n");
     }
 }
 
@@ -84,7 +95,7 @@ void hdlc_tx_flush_buffer_callback(void *user_ptr) {
 void hdlc_tx_byte_callback(uint8_t byte, void *user_ptr) {
     ringbuf_push(&hid_tx_ringbuffer, &byte, 1);
 
-    if (ringbuf_len(&hid_tx_ringbuffer) >= 64 && tud_hid_ready()) {
+    if (ringbuf_len(&hid_tx_ringbuffer) >= 64) {
         hid_flush();
     }
 }
@@ -92,8 +103,8 @@ void hdlc_tx_byte_callback(uint8_t byte, void *user_ptr) {
 // HID get report callback
 uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen) {
     // dummy implementation, should never be used anyway
-    SEGGER_RTT_printf(0, "tud_hid_get_report_cb: report_id: %d, report_type: %d, reqlen: %d\n", report_id, report_type,
-                      reqlen);
+//    SEGGER_RTT_printf(0, "tud_hid_get_report_cb: report_id: %d, report_type: %d, reqlen: %d\n", report_id, report_type,
+//                      reqlen);
 
     for (int i = 0; i < reqlen; i++) {
         buffer[i] = SIMPLEHDLC_BOUNDARY_MARKER;
@@ -108,10 +119,25 @@ void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uin
 
 //    SEGGER_RTT_printf(0, "[HID] got report from host: report_id: %d, report_type: %d, bufsize: %d\n", report_id, report_type,
 //                      bufsize);
+//
+//    if (bufsize != 64) {
+//        SEGGER_RTT_printf(0, "Got buffer with invalid size: %d, contents:\n", bufsize);
+//        for (int i=0; i<bufsize; i++) {
+//            SEGGER_RTT_printf(0, "%02X ", buffer[i]);
+//        }
+//        SEGGER_RTT_printf(0, "\n");
+//    }
 
     ringbuf_push(&hid_rx_ringbuffer, buffer, bufsize);
     set_led_counter(LED_BUSY_IDX, 2);
     xTaskNotify(hid_rpc_task_handle, EVENT_HID_RX, eSetBits);
+}
+
+rpc_error_t
+rpc_max_size(const CborValue *args_iterator, CborEncoder *result, const char **error_msg, void *user_ptr) {
+    cbor_encode_int(result, sizeof(hdlc_rx_buffer));
+
+    return RPC_OK;
 }
 
 static uint8_t tmp_buf[64];

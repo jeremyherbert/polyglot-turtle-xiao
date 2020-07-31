@@ -6,7 +6,7 @@ sys.path.append(os.path.join(current_path, "..", "..", "libs"))
 from simplecborrpc.api_gen import generate_api, CborTypes
 
 generate_api(current_path, {
-    "echo": [CborTypes.CBOR_TYPE_TEXT_STRING],
+    "max_size": [],
 
     "gpio_set_dir": [
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # pin number
@@ -28,6 +28,7 @@ generate_api(current_path, {
     ],
 
     "i2c_exchange": [
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # I2C interface index
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # device address (right aligned)
         CborTypes.CBOR_TYPE_BYTE_STRING,       # bytes to send (can be empty)
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # number of bytes to receive
@@ -36,11 +37,16 @@ generate_api(current_path, {
     ],
 
     "spi_exchange": [
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # SPI interface index
         CborTypes.CBOR_TYPE_BYTE_STRING,       # bytes to send (can be empty)
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # read size
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # clock rate (Hz)
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # SPI mode
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # transaction timeout (ms)
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # output pin number to use as CS (set to 0xFF to disable)
-    ]
+    ],
+
+    "polyglot_version": [],
+
+    "polyglot_hw": [],
 })
