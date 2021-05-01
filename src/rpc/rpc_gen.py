@@ -46,6 +46,15 @@ generate_api(current_path, {
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # output pin number to use as CS (set to 0xFF to disable)
     ],
 
+    "pwm_set": [
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # pin number
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # prescaler index (from pwm_get_info)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # counter period (in ticks)
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # duty cycle (in ticks)
+    ],
+
+    "pwm_get_info": [],
+
     "polyglot_version": [],
 
     "polyglot_hw": [],

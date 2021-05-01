@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 
-#define POLYGLOT_VERSION "0.1.0"
+#define POLYGLOT_VERSION "0.2.0"
 #define POLYGLOT_HW "seeeduino-xiao"
 
 
@@ -77,6 +77,14 @@ void clock_init() {
     // enable SPI clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBC, SERCOM0);
     _gclk_enable_channel(SERCOM0_GCLK_ID_CORE, GCLK_CLKCTRL_GEN_GCLK0_Val);
+
+    // enable TCC0 clock (GCLK0)
+    _pm_enable_bus_clock(PM_BUS_APBC, TCC0);
+    _gclk_enable_channel(TCC0_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+
+    // enable TCC1 clock (GCLK0)
+    _pm_enable_bus_clock(PM_BUS_APBC, TCC1);
+    _gclk_enable_channel(TCC0_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
     // enable DMA clock
     _pm_enable_bus_clock(PM_BUS_APBB, DMAC);

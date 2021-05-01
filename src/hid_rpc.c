@@ -11,6 +11,7 @@
 #include "hid_rpc.h"
 #include "rpc_i2c.h"
 #include "rpc_spi.h"
+#include "rpc_pwm.h"
 
 #define EVENT_HID_RX                  (1 << 0)
 
@@ -45,6 +46,7 @@ simplehdlc_callbacks_t hdlc_callbacks = {
 void hid_rpc_init() {
     rpc_i2c_init();
     rpc_spi_init();
+    rpc_pwm_init();
 
     simplehdlc_init(&hdlc_context, hdlc_rx_buffer, sizeof(hdlc_rx_buffer), &hdlc_callbacks, NULL);
     ringbuf_init(&hid_rx_ringbuffer, hid_rx_buffer, sizeof(hid_rx_buffer));
