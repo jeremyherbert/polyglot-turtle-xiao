@@ -91,6 +91,7 @@ set(SRC_FILES
         src/rpc_i2c.c
         src/rpc_spi.c
         src/rpc_pwm.c
+        src/rpc_dac.c
         src/hid_rpc.c
         src/leds.c
 

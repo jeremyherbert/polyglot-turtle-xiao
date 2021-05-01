@@ -84,7 +84,11 @@ void clock_init() {
 
     // enable TCC1 clock (GCLK0)
     _pm_enable_bus_clock(PM_BUS_APBC, TCC1);
-    _gclk_enable_channel(TCC0_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+    _gclk_enable_channel(TCC1_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+
+    // enable DAC clock (GCLK0)
+    _pm_enable_bus_clock(PM_BUS_APBC, DAC);
+    _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
     // enable DMA clock
     _pm_enable_bus_clock(PM_BUS_APBB, DMAC);

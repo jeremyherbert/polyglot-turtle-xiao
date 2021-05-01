@@ -55,6 +55,13 @@ generate_api(current_path, {
 
     "pwm_get_info": [],
 
+    "dac_set": [
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # pin number
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # DAC level
+    ],
+
+    "dac_get_info": [],
+
     "polyglot_version": [],
 
     "polyglot_hw": [],

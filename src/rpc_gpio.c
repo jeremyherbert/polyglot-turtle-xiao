@@ -1,5 +1,6 @@
 #include "simplecborrpc.h"
 #include "pins.h"
+#include "rpc_dac.h"
 #include "hal/include/hal_gpio.h"
 
 rpc_error_t
@@ -21,6 +22,8 @@ rpc_gpio_set_dir(const CborValue *args_iterator, CborEncoder *result, const char
         *error_msg = "Invalid direction";
         return RPC_ERROR_INVALID_ARGS;
     }
+
+    if (pin_number == 0) dac_disable();
 
     gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
     switch(direction) {
@@ -61,6 +64,8 @@ rpc_gpio_set_pull(const CborValue *args_iterator, CborEncoder *result, const cha
         return RPC_ERROR_INVALID_ARGS;
     }
 
+    if (pin_number == 0) dac_disable();
+
     gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
     switch(pull_type) {
         case 0:
@@ -95,6 +100,8 @@ rpc_gpio_set_level(const CborValue *args_iterator, CborEncoder *result, const ch
         *error_msg = "Invalid pin";
         return RPC_ERROR_INVALID_ARGS;
     } else {
+        if (pin_number == 0) dac_disable();
+
         gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
         gpio_set_pin_level(gpio_pin_map[pin_number], value);
     }
@@ -112,6 +119,8 @@ rpc_gpio_get_level(const CborValue *args_iterator, CborEncoder *result, const ch
         *error_msg = "Invalid pin";
         return RPC_ERROR_INVALID_ARGS;
     }
+
+    if (pin_number == 0) dac_disable();
 
     gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
     bool read_value = gpio_get_pin_level(gpio_pin_map[pin_number]);
