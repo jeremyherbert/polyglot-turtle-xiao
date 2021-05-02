@@ -55,6 +55,39 @@ void clock_init() {
     _sysctrl_init_referenced_generators();
     _gclk_init_generators_by_fref(_GCLK_INIT_LAST);
 
+
+    // init GCLK2 for ADC (must be less than 2.1MHz with /4 prescaler inside ADC => less than 8.4MHz out of GCLK3)
+
+    // Even though the datasheet says it can be clocked up to 48MHz in the "Maximum Clock Frequencies" table, it later
+    //   says that the maximum clock rate is 2.1MHz for the ADC in the "Analog-to-Digital (ADC) characteristics" table.
+    // Driving it at 48MHz doesn't work, the output is garbage (presumably because the ADC cannot complete the
+    //   conversion fast enough)
+
+    // 48MHz / 6 = 8MHz (which will be prescaled by 4 in the ADC => 2MHz)
+    hri_gclk_write_GENDIV_reg(GCLK, GCLK_GENDIV_DIV(6) | GCLK_GENDIV_ID(2));
+    hri_gclk_write_GENCTRL_reg(GCLK,
+                               (0 << GCLK_GENCTRL_RUNSTDBY_Pos)
+                               | (0 << GCLK_GENCTRL_DIVSEL_Pos)
+                               | (1 << GCLK_GENCTRL_OE_Pos)
+                               | (0 << GCLK_GENCTRL_OOV_Pos)
+                               | (0 << GCLK_GENCTRL_IDC_Pos)
+                               | (1 << GCLK_GENCTRL_GENEN_Pos)
+                               | GCLK_GENCTRL_SRC_DFLL48M
+                               | GCLK_GENCTRL_ID(2));
+
+
+    // init GCLK3 for DAC (must be less than 350kHz according to the datasheet "Maximum Clock Frequencies" table)
+    hri_gclk_write_GENDIV_reg(GCLK, GCLK_GENDIV_DIV(138) | GCLK_GENDIV_ID(3)); // 48MHz / 138 = ~347kHz
+    hri_gclk_write_GENCTRL_reg(GCLK,
+                               (0 << GCLK_GENCTRL_RUNSTDBY_Pos)
+                               | (0 << GCLK_GENCTRL_DIVSEL_Pos)
+                               | (1 << GCLK_GENCTRL_OE_Pos)
+                               | (0 << GCLK_GENCTRL_OOV_Pos)
+                               | (0 << GCLK_GENCTRL_IDC_Pos)
+                               | (1 << GCLK_GENCTRL_GENEN_Pos)
+                               | GCLK_GENCTRL_SRC_DFLL48M
+                               | GCLK_GENCTRL_ID(3));
+
     // Update SystemCoreClock since it is hard coded with asf4 and not correct
     // Init 1ms tick timer (samd SystemCoreClock may not correct)
     SystemCoreClock = CONF_CPU_FREQUENCY;
@@ -86,13 +119,13 @@ void clock_init() {
     _pm_enable_bus_clock(PM_BUS_APBC, TCC1);
     _gclk_enable_channel(TCC1_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
-    // enable DAC clock (GCLK0)
-    _pm_enable_bus_clock(PM_BUS_APBC, DAC);
-    _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
-
-    // enable ADC clock (GCLK0)
+    // enable ADC clock (GCLK2)
     _pm_enable_bus_clock(PM_BUS_APBC, ADC);
-    _gclk_enable_channel(ADC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+    _gclk_enable_channel(ADC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK2_Val);
+
+    // enable DAC clock (GCLK3)
+    _pm_enable_bus_clock(PM_BUS_APBC, DAC);
+    _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK3_Val);
 
     // enable DMA clock
     _pm_enable_bus_clock(PM_BUS_APBB, DMAC);

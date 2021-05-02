@@ -32,7 +32,7 @@ void rpc_adc_init() {
 
     hri_adc_wait_for_sync(ADC);
     // ADC clock must be less than 2.1MHz
-    hri_adc_write_CTRLB_PRESCALER_bf(ADC, ADC_CTRLB_PRESCALER_DIV32_Val); // 48MHz / 32 = 1.5MHz
+    hri_adc_write_CTRLB_PRESCALER_bf(ADC, ADC_CTRLB_PRESCALER_DIV4_Val); // 8MHz / 4 = 2MHz
 
     hri_adc_wait_for_sync(ADC);
     hri_adc_write_CALIB_LINEARITY_CAL_bf(ADC,
