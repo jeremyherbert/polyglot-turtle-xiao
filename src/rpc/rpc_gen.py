@@ -62,6 +62,10 @@ generate_api(current_path, {
 
     "dac_get_info": [],
 
+    "adc_get": [
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # pin number
+    ],
+
     "polyglot_version": [],
 
     "polyglot_hw": [],

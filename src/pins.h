@@ -36,6 +36,6 @@ typedef enum {
     GPIO_OFF
 } gpio_type_t;
 
-int configure_gpio_function(uint32_t pin_number, gpio_type_t type);
+void configure_gpio_function(uint32_t pin_number, gpio_type_t type);
 
 #endif //POLYGLOT_TURTLE_XIAO_PROJ_PINS_H

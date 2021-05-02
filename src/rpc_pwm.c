@@ -5,11 +5,6 @@
 #include "hal/include/hal_gpio.h"
 #include "hri/hri_tcc_d21.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "event_groups.h"
-#include "SEGGER_RTT.h"
-
 #include "pins.h"
 
 #include "rpc_pwm.h"

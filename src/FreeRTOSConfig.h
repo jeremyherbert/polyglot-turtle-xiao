@@ -128,7 +128,8 @@ extern uint32_t SystemCoreClock;
       }\
     } while(0)
 #else
-#define configASSERT( x )
+void vAssertCalled(const char * pcFile, unsigned long ulLine);
+#define configASSERT(x) if((x) == 0) vAssertCalled(__FILE__, __LINE__)
 #endif
 
 /* FreeRTOS hooks to NVIC vectors */

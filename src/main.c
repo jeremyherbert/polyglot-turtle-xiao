@@ -90,6 +90,10 @@ void clock_init() {
     _pm_enable_bus_clock(PM_BUS_APBC, DAC);
     _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
 
+    // enable ADC clock (GCLK0)
+    _pm_enable_bus_clock(PM_BUS_APBC, ADC);
+    _gclk_enable_channel(ADC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+
     // enable DMA clock
     _pm_enable_bus_clock(PM_BUS_APBB, DMAC);
     _pm_enable_bus_clock(PM_BUS_AHB, DMAC);
@@ -223,5 +227,9 @@ ssize_t _write (int fd, const void * buf, size_t count) {
 }
 
 ssize_t _read (int fd, void * buf, size_t count) {
+    while(1);
+}
+
+void vAssertCalled(const char * pcFile, unsigned long ulLine) {
     while(1);
 }
