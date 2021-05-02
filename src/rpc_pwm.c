@@ -84,18 +84,12 @@ rpc_error_t rpc_pwm_set(const CborValue *args_iterator, CborEncoder *result, con
 
     uint8_t cc_index;
     Tcc *tcc;
-    uint32_t pin;
-    uint32_t pin_function;
     if (gpio_num == 2) {
         cc_index = 0;
         tcc = TCC1;
-        pin = PIN_PA10;
-        pin_function = PINMUX_PA10E_TCC1_WO0;
     } else {
         cc_index = 3;
         tcc = TCC0;
-        pin = PIN_PA11;
-        pin_function = PINMUX_PA11F_TCC0_WO3;
     }
 
     if (hri_tcc_read_CTRLA_PRESCALER_bf(tcc) != prescaler_index) {
@@ -122,8 +116,8 @@ rpc_error_t rpc_pwm_set(const CborValue *args_iterator, CborEncoder *result, con
         hri_tcc_wait_for_sync(tcc, TCC_SYNCBUSY_CC(cc_index));
     }
 
-    gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
-    gpio_set_pin_function(pin, pin_function);
+    gpio_set_pin_direction(gpio_pin_map[gpio_num], GPIO_DIRECTION_OUT);
+    configure_gpio_function(gpio_pin_map[gpio_num], GPIO_PWM);
 
     cbor_encode_null(result);
     return RPC_OK;

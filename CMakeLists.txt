@@ -94,6 +94,7 @@ set(SRC_FILES
         src/rpc_dac.c
         src/hid_rpc.c
         src/leds.c
+        src/pins.c
 
         src/freertos_hook.c src/cdc_usart.c src/cdc_usart.h)
 

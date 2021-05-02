@@ -23,9 +23,8 @@ rpc_gpio_set_dir(const CborValue *args_iterator, CborEncoder *result, const char
         return RPC_ERROR_INVALID_ARGS;
     }
 
-    if (pin_number == 0) dac_disable();
+    configure_gpio_function(gpio_pin_map[pin_number], GPIO_NO_ALTERNATE_FUNCTION);
 
-    gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
     switch(direction) {
         case 0:
             gpio_set_pin_direction(gpio_pin_map[pin_number], GPIO_DIRECTION_IN);
@@ -64,9 +63,7 @@ rpc_gpio_set_pull(const CborValue *args_iterator, CborEncoder *result, const cha
         return RPC_ERROR_INVALID_ARGS;
     }
 
-    if (pin_number == 0) dac_disable();
-
-    gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
+    configure_gpio_function(gpio_pin_map[pin_number], GPIO_NO_ALTERNATE_FUNCTION);
     switch(pull_type) {
         case 0:
             gpio_set_pin_pull_mode(gpio_pin_map[pin_number], GPIO_PULL_OFF);
@@ -100,9 +97,7 @@ rpc_gpio_set_level(const CborValue *args_iterator, CborEncoder *result, const ch
         *error_msg = "Invalid pin";
         return RPC_ERROR_INVALID_ARGS;
     } else {
-        if (pin_number == 0) dac_disable();
-
-        gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
+        configure_gpio_function(gpio_pin_map[pin_number], GPIO_NO_ALTERNATE_FUNCTION);
         gpio_set_pin_level(gpio_pin_map[pin_number], value);
     }
 
@@ -120,9 +115,7 @@ rpc_gpio_get_level(const CborValue *args_iterator, CborEncoder *result, const ch
         return RPC_ERROR_INVALID_ARGS;
     }
 
-    if (pin_number == 0) dac_disable();
-
-    gpio_set_pin_function(gpio_pin_map[pin_number], GPIO_PIN_FUNCTION_OFF);
+    configure_gpio_function(gpio_pin_map[pin_number], GPIO_NO_ALTERNATE_FUNCTION);
     bool read_value = gpio_get_pin_level(gpio_pin_map[pin_number]);
     cbor_encode_boolean(result, read_value);
 

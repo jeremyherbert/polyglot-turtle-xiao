@@ -69,8 +69,7 @@ rpc_error_t rpc_dac_set(const CborValue *args_iterator, CborEncoder *result, con
     hri_dac_write_DATA_DATA_bf(DAC, dac_level);
     hri_dac_wait_for_sync(DAC);
 
-    gpio_set_pin_direction(PIN_PA02, GPIO_DIRECTION_OFF);
-    gpio_set_pin_function(PIN_PA02, PINMUX_PA02B_DAC_VOUT);
+    configure_gpio_function(gpio_pin_map[gpio_num], GPIO_DAC);
 
     cbor_encode_null(result);
     return RPC_OK;

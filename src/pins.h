@@ -23,9 +23,19 @@
 
 static const size_t gpio_pin_map[GPIO_PIN_COUNT] = {
         PIN_PA02,
-        PIN_PA04,
-        PIN_PA10,
-        PIN_PA11
+        PIN_PA04, // PWM: TCC3/WO[2], alt function F
+        PIN_PA10, // PWM: TCC1/WO[0], alt function E
+        PIN_PA11  // PWM: TCC0/WO[3], alt function F
 };
+
+typedef enum {
+    GPIO_NO_ALTERNATE_FUNCTION,
+    GPIO_DAC,
+    GPIO_PWM,
+    GPIO_ADC,
+    GPIO_OFF
+} gpio_type_t;
+
+int configure_gpio_function(uint32_t pin_number, gpio_type_t type);
 
 #endif //POLYGLOT_TURTLE_XIAO_PROJ_PINS_H
