@@ -6,11 +6,13 @@ It is designed to be used with the [seeeduino xiao](http://wiki.seeedstudio.com/
 
 **Important notes:**
 
-- The seeeduino xiao supports 0V to 3.3V digital signals. Connecting signals outside this range will likely cause permanent damage to the device.
+- The seeeduino xiao supports 0V to 3.3V signals. Connecting signals outside this range will likely cause permanent damage to the device.
 - Not all UART baud rates will work, as the clock source in the microcontroller has a fixed resolution. The following baud rates have been tested as working:
     - 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 128000, 230400, 256000, 460800, 500000, 675000, 921600, 1000000
 - The USB-to-UART does not support hardware flow control on the UART side.
 - The I2C interface does not have built-in pullup resistors. Use 4.7k external resistors on SDA and SCL (or other values as appropriate).
+- The ADC and DAC are limited to 0V to 3.3V range only.
+- Both PWM pins are driven by independent, 24bit PWM hardware. As such, each pin can use a different PWM frequency.
 - Both the VBUS and 3.3V pins are outputs.
 - The 3.3V regulator on this device is not designed to supply a high current. Keep the current draw under 100mA or so.
 
@@ -44,4 +46,4 @@ There are four LEDs next to the USB connector.
 
 ## Connection information
 
-![polyglot-turtle-xiao pinout](https://i.imgur.com/ZsE1cej.png)
+![polyglot-turtle-xiao pinout](https://i.imgur.com/9YmdcBl.png)
