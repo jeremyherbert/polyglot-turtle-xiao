@@ -181,6 +181,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     }
 
     if (cs_pin_number != 0xFF) {
+        configure_gpio_function(gpio_pin_map[cs_pin_number], GPIO_NO_ALTERNATE_FUNCTION);
         gpio_set_pin_direction(gpio_pin_map[cs_pin_number], GPIO_DIRECTION_OUT);
         gpio_set_pin_level(gpio_pin_map[cs_pin_number], false);
     }
