@@ -24,7 +24,7 @@
 #define I2C_BAUD_400K   53
 #define I2C_BAUD_1M     16
 
-extern uint8_t i2c_spi_transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
+extern uint8_t transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
 
 static EventGroupHandle_t i2c_events;
 static StaticEventGroup_t i2c_events_mem;
@@ -59,10 +59,10 @@ void SERCOM2_Handler() {
                         write_phase = false;
                     }
                 } else {
-                    hri_sercomi2cm_write_DATA_reg(SERCOM2, i2c_spi_transaction_buffer[write_index++]); // continue
+                    hri_sercomi2cm_write_DATA_reg(SERCOM2, transaction_buffer[write_index++]); // continue
                 }
             } else {
-                i2c_spi_transaction_buffer[read_index++] = hri_sercomi2cm_read_DATA_reg(SERCOM2);
+                transaction_buffer[read_index++] = hri_sercomi2cm_read_DATA_reg(SERCOM2);
 
                 if (read_len == read_index) {
                     xEventGroupSetBitsFromISR(i2c_events, xEventGroupSetBitsFromISR(i2c_events, EVENT_I2C_TRANSACTION_DONE, NULL), NULL);
@@ -157,7 +157,7 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
         write_len = length;
     }
     length = I2C_SPI_TRANSACTION_BUFFER_SIZE;
-    cbor_value_copy_byte_string(&private_args_it, i2c_spi_transaction_buffer, &length, &private_args_it);
+    cbor_value_copy_byte_string(&private_args_it, transaction_buffer, &length, &private_args_it);
 
     cbor_value_get_uint64(&private_args_it, &rx_byte_count);
     if (rx_byte_count > I2C_SPI_TRANSACTION_BUFFER_SIZE) {
@@ -188,7 +188,7 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     }
 
     if (write_len == 0 && read_len == 0) {
-        cbor_encode_byte_string(result, i2c_spi_transaction_buffer, 0);
+        cbor_encode_byte_string(result, transaction_buffer, 0);
         return RPC_OK;
     }
 
@@ -230,6 +230,6 @@ rpc_i2c_exchange(const CborValue *args_iterator, CborEncoder *result, const char
         return RPC_ERROR_I2C_FAILED;
     }
 
-    cbor_encode_byte_string(result, i2c_spi_transaction_buffer, read_len);
+    cbor_encode_byte_string(result, transaction_buffer, read_len);
     return RPC_OK;
 }

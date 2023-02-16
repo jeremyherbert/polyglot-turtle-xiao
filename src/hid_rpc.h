@@ -3,7 +3,7 @@
 
 void start_hid_rpc_task();
 
-#define I2C_SPI_TRANSACTION_BUFFER_SIZE 2100
-extern uint8_t i2c_spi_transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
+#define I2C_SPI_TRANSACTION_BUFFER_SIZE 2048
+extern uint8_t transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
 
 #endif //POLYGLOT_TURTLE_XIAO_PROJ_HID_RPC_H

@@ -27,6 +27,14 @@ generate_api(current_path, {
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER   # pin number
     ],
 
+    "openocd_jtag": [
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # TDI GPIO number
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # TDO GPIO number
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # TMS GPIO number
+        CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # TCK GPIO number
+        CborTypes.CBOR_TYPE_BYTE_STRING,       # jtag data to write
+    ],
+
     "i2c_exchange": [
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # I2C interface index
         CborTypes.CBOR_TYPE_UNSIGNED_INTEGER,  # device address (right aligned)

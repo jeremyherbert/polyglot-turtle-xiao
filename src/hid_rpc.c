@@ -23,7 +23,7 @@ StaticTask_t hid_rpc_task_taskdef;
 TaskHandle_t hid_rpc_task_handle;
 
 COMPILER_ALIGNED(16)
-uint8_t i2c_spi_transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
+uint8_t transaction_buffer[I2C_SPI_TRANSACTION_BUFFER_SIZE];
 
 uint8_t hdlc_rx_buffer[5*I2C_SPI_TRANSACTION_BUFFER_SIZE/2];
 uint8_t rpc_output_buffer[5*I2C_SPI_TRANSACTION_BUFFER_SIZE/2];

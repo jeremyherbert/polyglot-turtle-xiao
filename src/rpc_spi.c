@@ -95,7 +95,7 @@ void spi_reinit_with_clock_rate(uint32_t clock_rate, uint8_t spi_mode) {
 void rpc_spi_init() {
     spi_events = xEventGroupCreateStatic(&spi_events_mem);
 
-    spi_reinit_with_clock_rate(100000, 0);
+    spi_reinit_with_clock_rate(100000, 3);
 }
 
 rpc_error_t
@@ -110,7 +110,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     uint64_t cs_pin_number;
 
     // clear the buffer
-    memset(i2c_spi_transaction_buffer, 0, I2C_SPI_TRANSACTION_BUFFER_SIZE);
+    memset(transaction_buffer, 0, I2C_SPI_TRANSACTION_BUFFER_SIZE);
 
     cbor_value_get_uint64(&private_args_it, &spi_index);
     if (spi_index != 0) {
@@ -128,7 +128,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
         tx_len = length;
     }
     length = I2C_SPI_TRANSACTION_BUFFER_SIZE;
-    cbor_value_copy_byte_string(&private_args_it, i2c_spi_transaction_buffer, &length, &private_args_it);
+    cbor_value_copy_byte_string(&private_args_it, transaction_buffer, &length, &private_args_it);
 
     cbor_value_get_uint64(&private_args_it, &rx_len);
     if (rx_len > I2C_SPI_TRANSACTION_BUFFER_SIZE) {
@@ -172,7 +172,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     }
 
     if (tx_len == 0 && rx_len == 0) {
-        cbor_encode_byte_string(result, i2c_spi_transaction_buffer, 0);
+        cbor_encode_byte_string(result, transaction_buffer, 0);
         return RPC_OK;
     }
 
@@ -191,12 +191,12 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
 
     // setup DMA read
     // set pointer to the final beat of the transaction
-    hri_dmacdescriptor_write_DSTADDR_reg(spi_dma_read_descriptor, (uint32_t) (i2c_spi_transaction_buffer + tx_len));
+    hri_dmacdescriptor_write_DSTADDR_reg(spi_dma_read_descriptor, (uint32_t) (transaction_buffer + tx_len));
     hri_dmacdescriptor_write_BTCNT_reg(spi_dma_read_descriptor, (uint16_t) tx_len); // set beat count
 
     // setup DMA write
     // set pointer to the final beat of the transaction
-    hri_dmacdescriptor_write_SRCADDR_reg(spi_dma_write_descriptor, (uint32_t) (i2c_spi_transaction_buffer + tx_len));
+    hri_dmacdescriptor_write_SRCADDR_reg(spi_dma_write_descriptor, (uint32_t) (transaction_buffer + tx_len));
     hri_dmacdescriptor_write_BTCNT_reg(spi_dma_write_descriptor, (uint16_t) tx_len); // set beat count
 
     // enable DMA channels
@@ -210,7 +210,7 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     }
 
     if (events & EVENT_SPI_WRITE_DONE && events & EVENT_SPI_READ_DONE) {
-        cbor_encode_byte_string(result, i2c_spi_transaction_buffer, rx_len);
+        cbor_encode_byte_string(result, transaction_buffer, rx_len);
         return RPC_OK;
     } else {
         *error_msg = "SPI transaction timed out";

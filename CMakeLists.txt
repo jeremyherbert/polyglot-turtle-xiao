@@ -19,7 +19,7 @@ set(GCC_FLAGS "-fsingle-precision-constant -fno-strict-aliasing -Wdouble-promoti
                 -Wno-error=float-equal -Wno-error=double-promotion")
 
 add_definitions(${CPU_FLAGS} ${GCC_FLAGS} -Og -g
-        -D__SAMD21G18A__ -DCONF_DFLL_OVERWRITE_CALIBRATION=0 -DCFG_TUSB_MCU=OPT_MCU_SAMD21)
+        -D__SAMD21G18A__ -DCONF_DFLL_OVERWRITE_CALIBRATION=0 -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DF_CPU=48000000)
 
 set(LINKER_FILE ${CMAKE_CURRENT_LIST_DIR}/libs/tinyusb/hw/bsp/seeeduino_xiao/samd21g18a_flash.ld)
 string(APPEND CMAKE_EXE_LINKER_FLAGS " ${CPU_FLAGS} -Wl,-T ${LINKER_FILE}")
@@ -94,10 +94,12 @@ set(SRC_FILES
         src/rpc_dac.c
         src/rpc_adc.c
         src/hid_rpc.c
+        src/rpc_openocd_jtag.c
         src/leds.c
         src/pins.c
 
-        src/freertos_hook.c src/cdc_usart.c src/cdc_usart.h)
+        src/freertos_hook.c
+        src/cdc_usart.c)
 
 include_directories(
         src
