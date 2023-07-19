@@ -46,4 +46,4 @@ There are four LEDs next to the USB connector.
 
 ## Connection information
 
-![polyglot-turtle-xiao pinout]([https://i.imgur.com/9YmdcBl.png](https://files.jeremyherbert.net/polyglot-turtle-xiao.png)https://files.jeremyherbert.net/polyglot-turtle-xiao.png)
+![polyglot-turtle-xiao pinout](https://files.jeremyherbert.net/polyglot-turtle-xiao.png)
