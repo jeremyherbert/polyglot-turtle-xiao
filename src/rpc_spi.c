@@ -95,7 +95,7 @@ void spi_reinit_with_clock_rate(uint32_t clock_rate, uint8_t spi_mode) {
 void rpc_spi_init() {
     spi_events = xEventGroupCreateStatic(&spi_events_mem);
 
-    spi_reinit_with_clock_rate(100000, 3);
+    spi_reinit_with_clock_rate(100000, 0);
 }
 
 rpc_error_t
@@ -183,10 +183,15 @@ rpc_spi_exchange(const CborValue *args_iterator, CborEncoder *result, const char
     if (cs_pin_number != 0xFF) {
         configure_gpio_function(gpio_pin_map[cs_pin_number], GPIO_NO_ALTERNATE_FUNCTION);
         gpio_set_pin_direction(gpio_pin_map[cs_pin_number], GPIO_DIRECTION_OUT);
-        gpio_set_pin_level(gpio_pin_map[cs_pin_number], false);
+        gpio_set_pin_level(gpio_pin_map[cs_pin_number], true);
     }
 
     spi_reinit_with_clock_rate(clock_rate, spi_mode);
+
+    if (cs_pin_number != 0xFF) {
+        gpio_set_pin_level(gpio_pin_map[cs_pin_number], false);
+    }
+    
     xEventGroupClearBits(spi_events, EVENT_SPI_READ_DONE | EVENT_SPI_WRITE_DONE);
 
     // setup DMA read
