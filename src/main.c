@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 
-#define POLYGLOT_VERSION "0.3.0"
+#define POLYGLOT_VERSION "0.3.1"
 #define POLYGLOT_HW "seeeduino-xiao"
 
 
